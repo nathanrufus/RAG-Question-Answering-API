@@ -1,0 +1,30 @@
+# docker-compose.yml — simplifies running the container locally
+#
+# LEARNING NOTE:
+#   docker run -p 8000:8000 --env-file .env -v ./chroma_db:/app/chroma_db rag-api
+#   is equivalent to: docker-compose up
+#
+#   docker-compose is for LOCAL DEVELOPMENT. In production you'd use
+#   Kubernetes, ECS, or a managed container service.
+
+version: "3.9"
+
+services:
+  rag-api:
+    build: .                          # build from the Dockerfile in current directory
+    ports:
+      - "8000:8000"                   # host:container — access API at localhost:8000
+    env_file:
+      - .env                          # load ANTHROPIC_API_KEY etc. from .env
+    volumes:
+      # Mount chroma_db to host — vectors persist between container restarts
+      # Without this, every `docker-compose down` wipes your ingested documents
+      - ./chroma_db:/app/chroma_db
+      # Mount sample_docs so you can add documents without rebuilding the image
+      - ./sample_docs:/app/sample_docs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped           # auto-restart on crash (not on docker-compose down)

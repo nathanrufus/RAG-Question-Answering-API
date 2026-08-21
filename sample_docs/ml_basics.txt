@@ -1,0 +1,65 @@
+Machine Learning Fundamentals
+
+SUPERVISED LEARNING
+
+Supervised learning is a type of machine learning where the model learns from labelled training data. The algorithm learns to map input features to output labels by minimising prediction error. Common supervised tasks include classification (predicting categories) and regression (predicting continuous values).
+
+The training process involves feeding the model input-output pairs, computing a loss function that measures prediction error, and updating model parameters to reduce that error using optimisation algorithms like gradient descent.
+
+OVERFITTING AND UNDERFITTING
+
+Overfitting occurs when a model learns the training data too well, including its noise and outliers, causing it to perform poorly on unseen data. An overfit model has memorised the training examples rather than learning generalisable patterns. Signs of overfitting include high training accuracy paired with low validation accuracy.
+
+Underfitting occurs when a model is too simple to capture the underlying patterns in the data. An underfit model performs poorly on both training and validation sets. This is also called high bias.
+
+The bias-variance tradeoff describes the tension between these two failure modes. High bias (underfitting) models are too simple. High variance (overfitting) models are too complex. The goal is to find the sweet spot where the model generalises well to new data.
+
+To detect overfitting, compare training accuracy to validation accuracy. A large gap between the two indicates overfitting. Techniques to reduce overfitting include: cross-validation, regularisation (L1/L2), dropout (in neural networks), and collecting more training data.
+
+EVALUATION METRICS
+
+Accuracy measures the proportion of correct predictions. It is misleading when class distribution is imbalanced. For example, if 95% of emails are legitimate, a model that always predicts "not spam" achieves 95% accuracy without learning anything useful.
+
+Precision measures, of all the positive predictions made, what fraction were actually positive. It answers: "When the model says positive, how often is it right?" High precision minimises false positives.
+
+Recall measures, of all the actual positives in the dataset, what fraction did the model correctly identify. It answers: "Of all the real positives, how many did the model catch?" High recall minimises false negatives.
+
+The F1 score is the harmonic mean of precision and recall. It provides a single metric that balances both concerns. Use F1 when you care equally about precision and recall.
+
+Choose your metric based on the cost of errors:
+- Spam filter: optimise for precision. A false positive (legitimate email flagged as spam) is worse than a false negative (spam that reaches the inbox).
+- Cancer detection: optimise for recall. A false negative (missed cancer) is worse than a false positive (unnecessary follow-up test).
+
+FEATURE ENGINEERING
+
+Feature engineering is the process of creating new input features from raw data to improve model performance. Good features encode domain knowledge and make the underlying patterns easier for the model to learn.
+
+Examples of feature engineering:
+- Extracting the hour-of-day from a timestamp (captures time-of-day patterns)
+- Creating a "family size" feature by adding SibSp + Parch in the Titanic dataset
+- Computing rolling averages from time series data
+- One-hot encoding categorical variables like city names
+
+DATA LEAKAGE
+
+Data leakage occurs when information from outside the training dataset is used to train the model. Leakage causes the model to appear to perform well during testing but fail in production.
+
+The most common form of leakage is fitting preprocessing steps (like scalers or encoders) on the entire dataset before splitting into train and test sets. The correct approach is to fit all preprocessing ONLY on the training data, then apply those same transformations (without refitting) to the test data.
+
+Example of data leakage:
+- Wrong: fit MinMaxScaler on all data, then split into train/test
+- Correct: split into train/test first, then fit MinMaxScaler only on train, apply to test
+
+RANDOM FORESTS AND ENSEMBLE METHODS
+
+Random Forest is an ensemble method that trains many decision trees on random subsets of the training data (a technique called bagging, short for bootstrap aggregating). The final prediction is the majority vote (classification) or average (regression) across all trees.
+
+Random forests are robust to overfitting because the randomness introduced during training (both in data sampling and feature selection at each split) means individual trees make different errors, which cancel out in the ensemble.
+
+XGBoost uses a different ensemble strategy called boosting. Instead of training trees independently in parallel, boosting trains trees sequentially. Each new tree focuses on the examples that the previous trees got wrong, correcting their errors. XGBoost typically outperforms Random Forest on structured/tabular data.
+
+CROSS-VALIDATION
+
+Cross-validation is a technique for more reliably estimating model performance than a single train/test split. In k-fold cross-validation, the dataset is divided into k equal subsets. The model is trained k times, each time using k-1 subsets for training and the remaining subset for validation. The final score is the average across all k runs.
+
+Cross-validation reduces the variance of the performance estimate and uses all available data for both training and validation. It is especially valuable when the dataset is small.
