@@ -222,7 +222,11 @@ Question: {question}
 
 Answer using only the context above:"""
 
-        response = self.llm.generate_content(prompt)
+        response = self.llm.models.generate_content_stream(
+            model=settings.gemini_model,
+            contents=prompt,
+            config={"system_instruction": self.system_instruction}
+        )
 
         # LEARNING NOTE — response.text vs response.candidates:
         # response.text is a convenience property that returns the text of the
