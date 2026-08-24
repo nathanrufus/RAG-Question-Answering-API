@@ -27,6 +27,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware  # ← add this import
+
 
 from app.api.routes import router
 from app.pipeline.rag import RAGPipeline
@@ -64,7 +66,12 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Mount all /v1/* routes
 # The prefix means: routes.py defines "/health" but it's reachable at "/v1/health"
 # The tags group endpoints in the /docs UI
