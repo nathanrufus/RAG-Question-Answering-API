@@ -192,45 +192,28 @@ class RAGPipeline:
     # ──────────────────────────────────────────────────────────────────────────
 
     def _generate(self, question: str, context: str) -> str:
-        """
-        Generate an answer using the Gemini API, grounded in the provided context.
-
-        LEARNING NOTE — Why prefix the method with _?
-          Single underscore = "private by convention" in Python.
-          It signals: don't call this from outside the class.
-          The public interface is just ingest() and query().
-
-        LEARNING NOTE — Gemini API vs Anthropic API:
-          Anthropic:  client.messages.create(system=..., messages=[...])
-          Gemini:     model.generate_content(prompt_string)
-
-          Gemini's system_instruction was set on the model object in __init__(),
-          so here we only pass the user-facing prompt content.
-          The system rules apply automatically to every generate_content() call.
-
-        LEARNING NOTE — Why gemini-1.5-flash?
-          For RAG, the LLM's job is simple: read context, answer question.
-          It doesn't need deep reasoning — it needs speed and low cost.
-          gemini-1.5-flash is optimised exactly for this: fast, cheap, accurate
-          on straightforward retrieval tasks. Reserve gemini-1.5-pro for tasks
-          that require complex multi-step reasoning.
-        """
         prompt = f"""Context from the document:
-{context}
+    {context}
 
-Question: {question}
+    Question: {question}
 
-Answer using only the context above:"""
+    Answer using only the context above:"""
 
-        response = self.llm.models.generate_content_stream(
+        response = self.llm.models.generate_content(
             model=settings.gemini_model,
             contents=prompt,
-            config={"system_instruction": self.system_instruction}
+            config={
+                "system_instruction": self.system_instruction,
+            }
         )
 
-        # LEARNING NOTE — response.text vs response.candidates:
-        # response.text is a convenience property that returns the text of the
-        # first candidate's first part. Equivalent to:
-        #   response.candidates[0].content.parts[0].text
-        # For simple single-turn text generation, response.text is always safe.
-        return response.text
+        # Handle both streaming and non-streaming responses
+        if hasattr(response, "text"):
+            return response.text
+        
+        # If it's a generator, collect all chunks
+        full_text = ""
+        for chunk in response:
+            if hasattr(chunk, "text"):
+                full_text += chunk.text
+        return full_text

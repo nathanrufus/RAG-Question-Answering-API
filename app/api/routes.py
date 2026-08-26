@@ -125,11 +125,16 @@ async def query_document(
         )
         return QueryResponse(**result)
     except Exception as e:
+        import traceback
         logger.error(
             "Query failed",
-            extra={"extra": {"error": str(e), "question": request.question}}
+            extra={"extra": {
+                "error": str(e),
+                "traceback": traceback.format_exc(),
+                "question": request.question
+            }}
         )
-        raise HTTPException(status_code=500, detail="Query failed. Check server logs.")
+        raise HTTPException(status_code=500, detail=str(e))  # ← show actual error
 
 
 @router.delete("/collection", tags=["System"])
